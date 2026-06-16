@@ -1,0 +1,22 @@
+{
+  "name": "clientes_por_estado_v1",
+  "domain": "clientes",
+  "owner": "Time Clientes",
+  "version": "v1",
+  "classification": "Data Product Analitico",
+  "description": "Distribuicao consolidada de clientes por estado brasileiro.",
+  "source_tables": ["customer"],
+  "published_table": "clientes_por_estado_v1",
+  "format": "parquet",
+  "compression": "snappy",
+  "sla": {
+    "frequency": "daily",
+    "deadline_utc": "06:00"
+  },
+  "consumers": ["marketing", "analytics", "financeiro"],
+  "quality_metrics": [
+    "row_count_by_state",
+    "sum_total_clientes_matches_source",
+    "no_duplicate_states"
+  ]
+}

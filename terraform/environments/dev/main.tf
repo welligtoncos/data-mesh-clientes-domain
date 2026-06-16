@@ -36,18 +36,20 @@ module "glue" {
 module "iam" {
   source = "../../modules/iam"
 
-  domain_name                 = var.domain
-  environment                 = var.environment
-  bucket_arn                  = module.s3.bucket_arn
-  bucket_name                 = module.s3.bucket_id
-  glue_database_name          = module.glue.database_name
-  glue_database_arn           = module.glue.database_arn
-  data_products_prefix        = module.s3.data_products_prefix
-  internal_prefix             = module.s3.internal_prefix
-  customer_data_prefix        = var.customer_data_prefix
-  admin_trusted_principals    = var.admin_trusted_principals
-  consumer_trusted_principals = var.consumer_trusted_principals
-  tags                        = local.common_tags
+  domain_name                        = var.domain
+  environment                        = var.environment
+  bucket_arn                         = module.s3.bucket_arn
+  bucket_name                        = module.s3.bucket_id
+  glue_database_name                 = module.glue.database_name
+  glue_database_arn                  = module.glue.database_arn
+  data_products_prefix               = module.s3.data_products_prefix
+  internal_prefix                    = module.s3.internal_prefix
+  customer_data_prefix               = var.customer_data_prefix
+  published_data_product_tables      = var.published_data_product_tables
+  published_data_product_s3_prefixes = var.published_data_product_s3_prefixes
+  admin_trusted_principals           = var.admin_trusted_principals
+  consumer_trusted_principals        = var.consumer_trusted_principals
+  tags                               = local.common_tags
 }
 
 module "lakeformation" {

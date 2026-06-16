@@ -11,6 +11,20 @@ locals {
   consumer_trusted_principals = length(var.consumer_trusted_principals) > 0 ? var.consumer_trusted_principals : [
     "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
   ]
+
+  published_s3_list_prefixes = distinct(flatten([
+    for prefix in var.published_data_product_s3_prefixes : [prefix, "${prefix}*"]
+  ]))
+
+  published_table_arns = [
+    for table_name in var.published_data_product_tables :
+    "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/${table_name}"
+  ]
+
+  published_s3_object_arns = [
+    for prefix in var.published_data_product_s3_prefixes :
+    "${var.bucket_arn}/${prefix}*"
+  ]
 }
 
 # ---------------------------------------------------------------------------
@@ -170,7 +184,7 @@ resource "aws_iam_role_policy" "data_product_consumer" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "S3ListDataProducts"
+        Sid    = "S3ListPublishedDataProducts"
         Effect = "Allow"
         Action = [
           "s3:ListBucket",
@@ -179,35 +193,21 @@ resource "aws_iam_role_policy" "data_product_consumer" {
         Resource = var.bucket_arn
         Condition = {
           StringLike = {
-            "s3:prefix" = [
-              var.data_products_prefix,
-              "${var.data_products_prefix}*",
-              var.customer_data_prefix,
-              "${var.customer_data_prefix}*"
-            ]
+            "s3:prefix" = local.published_s3_list_prefixes
           }
         }
       },
       {
-        Sid    = "S3ReadDataProducts"
+        Sid    = "S3ReadPublishedDataProducts"
         Effect = "Allow"
         Action = [
           "s3:GetObject",
           "s3:GetObjectVersion"
         ]
-        Resource = "${var.bucket_arn}/${var.data_products_prefix}*"
+        Resource = local.published_s3_object_arns
       },
       {
-        Sid    = "S3ReadCustomerDataProduct"
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion"
-        ]
-        Resource = "${var.bucket_arn}/${var.customer_data_prefix}*"
-      },
-      {
-        Sid    = "GlueReadCatalog"
+        Sid    = "GlueReadPublishedCatalog"
         Effect = "Allow"
         Action = [
           "glue:GetDatabase",
@@ -218,11 +218,13 @@ resource "aws_iam_role_policy" "data_product_consumer" {
           "glue:GetPartitions",
           "glue:BatchGetPartition"
         ]
-        Resource = [
-          var.glue_database_arn,
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
-        ]
+        Resource = concat(
+          [
+            var.glue_database_arn,
+            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog"
+          ],
+          local.published_table_arns
+        )
       },
       {
         Sid    = "LakeFormationDataAccess"

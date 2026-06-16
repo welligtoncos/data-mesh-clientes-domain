@@ -8,6 +8,7 @@ Plataforma de dados orientada a dominios (Data Mesh) utilizando AWS e Terraform.
 |--------|-----------|--------|
 | DM-001 | Infraestrutura base do dominio Clientes | Concluida |
 | DM-002 | Ingestao do dataset customers.csv | Concluida |
+| DM-003 | Publicacao clientes_por_estado_v1 | Concluida |
 
 ## Arquitetura DM-002
 
@@ -50,6 +51,31 @@ tests/
 - Terraform >= 1.6
 - AWS CLI configurado
 - PowerShell 5.1+
+
+## Deploy DM-003
+
+```powershell
+cd terraform/environments/dev
+terraform apply
+
+# Publicar Data Product (apos customer ingerido)
+aws glue start-job-run --job-name clientes-domain-dev-clientes-por-estado-v1-publish
+
+# Testes
+powershell -File tests/Run-DM003Tests.ps1 -RunPublish
+```
+
+## Data Product clientes_por_estado_v1
+
+| Item | Valor |
+|------|-------|
+| Tabela | `clientes_por_estado_v1` |
+| Schema | customer_state, total_clientes, data_referencia |
+| S3 | `data-products/clientes_por_estado_v1/` |
+| SLA | Diario 06:00 UTC |
+
+- [ADR DM-003](docs/architecture/decisions/ADR-DM003-clientes-por-estado-v1.md)
+- [Documentacao](docs/data-products/clientes_por_estado_v1.md)
 
 ## Deploy DM-002
 

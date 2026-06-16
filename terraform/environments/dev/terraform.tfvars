@@ -20,5 +20,7 @@ create_data_lake_settings = false
 admin_trusted_principals = ["arn:aws:iam::303238378103:user/usuario-dados"]
 
 # DM-002 - Ingestao customer
-# Baixe o dataset completo: scripts/Download-OlistCustomers.ps1
 run_customer_ingestion_on_apply = false
+
+# DM-003 - Publicacao clientes_por_estado_v1
+run_clientes_por_estado_v1_on_apply = false

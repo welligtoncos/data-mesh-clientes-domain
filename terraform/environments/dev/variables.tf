@@ -152,3 +152,61 @@ variable "athena_results_prefix" {
   default     = "internal/athena-results/"
 }
 
+# ---------------------------------------------------------------------------
+# DM-003 - Data Product clientes_por_estado_v1
+# ---------------------------------------------------------------------------
+
+variable "published_data_product_tables" {
+  description = "Tabelas Glue publicadas para consumo externo."
+  type        = list(string)
+  default     = ["clientes_por_estado_v1"]
+}
+
+variable "published_data_product_s3_prefixes" {
+  description = "Prefixos S3 dos Data Products publicados."
+  type        = list(string)
+  default     = ["data-products/clientes_por_estado_v1/"]
+}
+
+variable "clientes_por_estado_v1_table_name" {
+  description = "Nome da tabela Glue do Data Product publicado."
+  type        = string
+  default     = "clientes_por_estado_v1"
+}
+
+variable "clientes_por_estado_v1_s3_prefix" {
+  description = "Prefixo S3 do Data Product publicado."
+  type        = string
+  default     = "data-products/clientes_por_estado_v1/"
+}
+
+variable "clientes_por_estado_v1_glue_script_path" {
+  description = "Caminho local do script Glue de publicacao."
+  type        = string
+  default     = "../../../data-products/clientes_por_estado_v1/scripts/publish.py"
+}
+
+variable "clientes_por_estado_v1_metadata_path" {
+  description = "Caminho local do arquivo de metadados do produto."
+  type        = string
+  default     = "../../../data-products/clientes_por_estado_v1/documentation/metadata.json"
+}
+
+variable "clientes_por_estado_v1_schedule_cron" {
+  description = "Cron do trigger Glue para SLA diario (UTC)."
+  type        = string
+  default     = "cron(0 6 * * ? *)"
+}
+
+variable "clientes_por_estado_v1_schedule_enabled" {
+  description = "Habilita trigger agendado do Data Product."
+  type        = bool
+  default     = true
+}
+
+variable "run_clientes_por_estado_v1_on_apply" {
+  description = "Executa Glue Job de publicacao apos terraform apply."
+  type        = bool
+  default     = false
+}
+

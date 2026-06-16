@@ -79,6 +79,23 @@ module "customer_crawler" {
   depends_on = [module.customer_ingestion_job]
 }
 
+resource "aws_lakeformation_permissions" "etl_customer_source_table" {
+  principal   = module.iam.etl_processing_role_arn
+  permissions = ["SELECT", "DESCRIBE"]
+
+  table {
+    database_name = module.glue.database_name
+    name          = local.customer_table_name
+    catalog_id    = data.aws_caller_identity.current.account_id
+  }
+
+  depends_on = [module.lakeformation]
+
+  lifecycle {
+    ignore_changes = [permissions, permissions_with_grant_option]
+  }
+}
+
 resource "null_resource" "run_customer_ingestion" {
   count = var.run_customer_ingestion_on_apply ? 1 : 0
 

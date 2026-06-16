@@ -113,3 +113,34 @@ output "customers_csv_local_path" {
   description = "Caminho local do arquivo customers.csv usado no upload."
   value       = var.customers_csv_path
 }
+
+# DM-003 - Data Product clientes_por_estado_v1
+output "clientes_por_estado_v1_table_name" {
+  description = "Nome da tabela publicada clientes_por_estado_v1."
+  value       = local.clientes_por_estado_v1_name
+}
+
+output "clientes_por_estado_v1_s3_uri" {
+  description = "URI S3 dos dados Parquet do Data Product publicado."
+  value       = local.clientes_por_estado_v1_s3_uri
+}
+
+output "clientes_por_estado_v1_metadata_s3_uri" {
+  description = "URI S3 dos metadados do Data Product (fora do path da tabela)."
+  value       = "s3://${module.s3.bucket_id}/${local.clientes_por_estado_v1_metadata_key}"
+}
+
+output "clientes_por_estado_v1_glue_job_name" {
+  description = "Nome do Glue Job de publicacao."
+  value       = module.clientes_por_estado_v1_publish_job.job_name
+}
+
+output "clientes_por_estado_v1_athena_ddl" {
+  description = "DDL Athena do Data Product."
+  value       = module.clientes_por_estado_v1_athena.athena_ddl
+}
+
+output "clientes_por_estado_v1_schedule_cron" {
+  description = "Expressao cron do SLA diario."
+  value       = var.clientes_por_estado_v1_schedule_cron
+}

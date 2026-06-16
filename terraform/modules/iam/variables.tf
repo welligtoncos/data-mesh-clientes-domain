@@ -41,9 +41,21 @@ variable "internal_prefix" {
 }
 
 variable "customer_data_prefix" {
-  description = "Prefixo S3 do Data Product customer (Parquet particionado)."
+  description = "Prefixo S3 do Data Product customer interno (Parquet particionado)."
   type        = string
   default     = "customer/"
+}
+
+variable "published_data_product_tables" {
+  description = "Tabelas Glue publicadas para consumo externo."
+  type        = list(string)
+  default     = []
+}
+
+variable "published_data_product_s3_prefixes" {
+  description = "Prefixos S3 dos Data Products publicados para consumo externo."
+  type        = list(string)
+  default     = []
 }
 
 variable "admin_trusted_principals" {

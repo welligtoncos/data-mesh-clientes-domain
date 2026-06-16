@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "clientes_por_estado_v1",
+  "description": "Contrato de dados do Data Product clientes_por_estado_v1",
+  "type": "object",
+  "properties": {
+    "customer_state": {
+      "type": "string",
+      "description": "Sigla do estado brasileiro (UF)",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "total_clientes": {
+      "type": "integer",
+      "description": "Quantidade total de clientes no estado",
+      "minimum": 0
+    },
+    "data_referencia": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de referencia da agregacao (UTC)"
+    }
+  },
+  "required": ["customer_state", "total_clientes", "data_referencia"],
+  "additionalProperties": false
+}
