@@ -34,6 +34,14 @@ resource "aws_glue_catalog_table" "data_product" {
       }
     }
   }
+
+  dynamic "partition_keys" {
+    for_each = var.partition_keys
+    content {
+      name = partition_keys.value.name
+      type = partition_keys.value.type
+    }
+  }
 }
 
 resource "aws_athena_named_query" "data_product_preview" {
@@ -44,7 +52,7 @@ resource "aws_athena_named_query" "data_product_preview" {
   query = <<-SQL
     SELECT *
     FROM ${var.database_name}.${var.table_name}
-    ORDER BY total_clientes DESC
+    ORDER BY ${var.preview_order_column} DESC
     LIMIT 100;
   SQL
 

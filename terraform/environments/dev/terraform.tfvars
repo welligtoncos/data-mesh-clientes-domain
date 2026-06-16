@@ -24,3 +24,6 @@ run_customer_ingestion_on_apply = false
 
 # DM-003 - Publicacao clientes_por_estado_v1
 run_clientes_por_estado_v1_on_apply = false
+
+# DM-004 - Publicacao clientes_ativos_v1
+run_clientes_ativos_v1_on_apply = false

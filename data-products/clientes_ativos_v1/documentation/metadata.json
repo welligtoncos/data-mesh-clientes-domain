@@ -1,0 +1,16 @@
+{
+  "name": "clientes_ativos_v1",
+  "domain": "clientes",
+  "owner": "Time Clientes",
+  "version": "v1",
+  "classification": "Behavioral Data Product",
+  "description": "Clientes com compra nos ultimos N dias (default 90).",
+  "source_tables": ["customer", "pedidos_domain.orders"],
+  "published_table": "clientes_ativos_v1",
+  "parameters": { "dias_atividade": 90 },
+  "format": "parquet",
+  "compression": "snappy",
+  "partition_key": "customer_state",
+  "sla": { "frequency": "daily", "deadline_utc": "06:00" },
+  "consumers": ["marketing", "crm", "analytics", "data_science"]
+}

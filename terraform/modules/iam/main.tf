@@ -25,6 +25,20 @@ locals {
     for prefix in var.published_data_product_s3_prefixes :
     "${var.bucket_arn}/${prefix}*"
   ]
+
+  cross_domain_s3_object_arns = [
+    for catalog in var.cross_domain_glue_catalogs :
+    "${var.bucket_arn}/${catalog.s3_prefix}*"
+  ]
+
+  cross_domain_database_arns = [
+    for catalog in var.cross_domain_glue_catalogs : catalog.database_arn
+  ]
+
+  cross_domain_table_arns = [
+    for catalog in var.cross_domain_glue_catalogs :
+    "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${catalog.database_name}/*"
+  ]
 }
 
 # ---------------------------------------------------------------------------
@@ -303,11 +317,14 @@ resource "aws_iam_role_policy" "etl_processing" {
           "s3:DeleteObject",
           "s3:GetObjectVersion"
         ]
-        Resource = [
-          "${var.bucket_arn}/${var.internal_prefix}*",
-          "${var.bucket_arn}/${var.data_products_prefix}*",
-          "${var.bucket_arn}/${var.customer_data_prefix}*"
-        ]
+        Resource = concat(
+          [
+            "${var.bucket_arn}/${var.internal_prefix}*",
+            "${var.bucket_arn}/${var.data_products_prefix}*",
+            "${var.bucket_arn}/${var.customer_data_prefix}*"
+          ],
+          local.cross_domain_s3_object_arns
+        )
       },
       {
         Sid    = "GlueETLAccess"
@@ -328,11 +345,15 @@ resource "aws_iam_role_policy" "etl_processing" {
           "glue:BatchCreatePartition",
           "glue:BatchGetPartition"
         ]
-        Resource = [
-          var.glue_database_arn,
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
-        ]
+        Resource = concat(
+          [
+            var.glue_database_arn,
+            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
+            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
+          ],
+          local.cross_domain_database_arns,
+          local.cross_domain_table_arns
+        )
       },
       {
         Sid    = "GlueServiceAccess"
@@ -424,10 +445,14 @@ resource "aws_iam_role_policy" "glue_crawler" {
           "s3:GetObject",
           "s3:GetObjectVersion"
         ]
-        Resource = [
-          "${var.bucket_arn}/${var.customer_data_prefix}*",
-          "${var.bucket_arn}/${var.data_products_prefix}*"
-        ]
+        Resource = concat(
+          [
+            "${var.bucket_arn}/${var.customer_data_prefix}*",
+            "${var.bucket_arn}/${var.data_products_prefix}*",
+            "${var.bucket_arn}/${var.internal_prefix}*"
+          ],
+          local.cross_domain_s3_object_arns
+        )
       },
       {
         Sid    = "GlueCrawlerCatalogAccess"
@@ -446,11 +471,15 @@ resource "aws_iam_role_policy" "glue_crawler" {
           "glue:BatchCreatePartition",
           "glue:BatchGetPartition"
         ]
-        Resource = [
-          var.glue_database_arn,
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
-          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
-        ]
+        Resource = concat(
+          [
+            var.glue_database_arn,
+            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
+            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
+          ],
+          local.cross_domain_database_arns,
+          local.cross_domain_table_arns
+        )
       },
       {
         Sid    = "GlueCrawlerServiceAccess"

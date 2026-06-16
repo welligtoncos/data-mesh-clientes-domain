@@ -159,13 +159,16 @@ variable "athena_results_prefix" {
 variable "published_data_product_tables" {
   description = "Tabelas Glue publicadas para consumo externo."
   type        = list(string)
-  default     = ["clientes_por_estado_v1"]
+  default     = ["clientes_por_estado_v1", "clientes_ativos_v1"]
 }
 
 variable "published_data_product_s3_prefixes" {
   description = "Prefixos S3 dos Data Products publicados."
   type        = list(string)
-  default     = ["data-products/clientes_por_estado_v1/"]
+  default = [
+    "data-products/clientes_por_estado_v1/",
+    "data-products/clientes_ativos_v1/",
+  ]
 }
 
 variable "clientes_por_estado_v1_table_name" {
@@ -205,6 +208,106 @@ variable "clientes_por_estado_v1_schedule_enabled" {
 }
 
 variable "run_clientes_por_estado_v1_on_apply" {
+  description = "Executa Glue Job de publicacao apos terraform apply."
+  type        = bool
+  default     = false
+}
+
+# ---------------------------------------------------------------------------
+# DM-004 - Fonte cross-domain Pedidos + Data Product clientes_ativos_v1
+# ---------------------------------------------------------------------------
+
+variable "pedidos_glue_database_name" {
+  description = "Nome do database Glue do dominio Pedidos (fonte cross-domain)."
+  type        = string
+  default     = "pedidos_domain"
+}
+
+variable "pedidos_glue_database_description" {
+  description = "Descricao do catalogo Glue do dominio Pedidos."
+  type        = string
+  default     = "Glue Catalog database for Pedidos domain (cross-domain source)."
+}
+
+variable "orders_table_name" {
+  description = "Nome da tabela orders do dominio Pedidos."
+  type        = string
+  default     = "orders"
+}
+
+variable "orders_csv_path" {
+  description = "Caminho local do arquivo orders.csv."
+  type        = string
+  default     = "../../../data/raw/orders.csv"
+}
+
+variable "orders_glue_script_path" {
+  description = "Caminho local do script Glue de ingestao orders."
+  type        = string
+  default     = "../../../data-products/orders/scripts/orders_ingestion.py"
+}
+
+variable "orders_cross_domain_prefix" {
+  description = "Prefixo S3 da area cross-domain do dominio Pedidos."
+  type        = string
+  default     = "internal/cross-domain/pedidos/"
+}
+
+variable "orders_raw_prefix" {
+  description = "Prefixo S3 da area raw de orders."
+  type        = string
+  default     = "internal/raw/orders/"
+}
+
+variable "orders_data_prefix" {
+  description = "Prefixo S3 da tabela interna orders."
+  type        = string
+  default     = "internal/cross-domain/pedidos/orders/"
+}
+
+variable "clientes_ativos_v1_table_name" {
+  description = "Nome da tabela publicada clientes_ativos_v1."
+  type        = string
+  default     = "clientes_ativos_v1"
+}
+
+variable "clientes_ativos_v1_s3_prefix" {
+  description = "Prefixo S3 do Data Product clientes_ativos_v1."
+  type        = string
+  default     = "data-products/clientes_ativos_v1/"
+}
+
+variable "clientes_ativos_v1_glue_script_path" {
+  description = "Caminho local do script Glue de publicacao."
+  type        = string
+  default     = "../../../data-products/clientes_ativos_v1/scripts/publish.py"
+}
+
+variable "clientes_ativos_v1_metadata_path" {
+  description = "Caminho local dos metadados do produto."
+  type        = string
+  default     = "../../../data-products/clientes_ativos_v1/documentation/metadata.json"
+}
+
+variable "clientes_ativos_v1_dias_atividade" {
+  description = "Janela em dias para definir cliente ativo."
+  type        = number
+  default     = 90
+}
+
+variable "clientes_ativos_v1_schedule_cron" {
+  description = "Cron do trigger Glue para SLA diario (UTC)."
+  type        = string
+  default     = "cron(0 6 * * ? *)"
+}
+
+variable "clientes_ativos_v1_schedule_enabled" {
+  description = "Habilita trigger agendado do Data Product."
+  type        = bool
+  default     = true
+}
+
+variable "run_clientes_ativos_v1_on_apply" {
   description = "Executa Glue Job de publicacao apos terraform apply."
   type        = bool
   default     = false

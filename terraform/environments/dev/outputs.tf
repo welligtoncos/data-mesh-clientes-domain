@@ -144,3 +144,49 @@ output "clientes_por_estado_v1_schedule_cron" {
   description = "Expressao cron do SLA diario."
   value       = var.clientes_por_estado_v1_schedule_cron
 }
+
+# DM-004 - clientes_ativos_v1
+output "pedidos_glue_database_name" {
+  description = "Nome do database Glue do dominio Pedidos."
+  value       = module.glue_pedidos.database_name
+}
+
+output "orders_table_name" {
+  description = "Nome da tabela orders (fonte cross-domain)."
+  value       = local.orders_table_name
+}
+
+output "orders_glue_job_name" {
+  description = "Nome do Glue Job de ingestao orders."
+  value       = module.orders_ingestion_job.job_name
+}
+
+output "clientes_ativos_v1_table_name" {
+  description = "Nome da tabela publicada clientes_ativos_v1."
+  value       = local.clientes_ativos_v1_name
+}
+
+output "clientes_ativos_v1_s3_uri" {
+  description = "URI S3 dos dados Parquet do Data Product."
+  value       = local.clientes_ativos_v1_s3_uri
+}
+
+output "clientes_ativos_v1_metadata_s3_uri" {
+  description = "URI S3 dos metadados do Data Product."
+  value       = "s3://${module.s3.bucket_id}/${local.clientes_ativos_v1_metadata_key}"
+}
+
+output "clientes_ativos_v1_glue_job_name" {
+  description = "Nome do Glue Job de publicacao."
+  value       = module.clientes_ativos_v1_publish_job.job_name
+}
+
+output "clientes_ativos_v1_dias_atividade" {
+  description = "Janela em dias para cliente ativo."
+  value       = var.clientes_ativos_v1_dias_atividade
+}
+
+output "clientes_ativos_v1_athena_ddl" {
+  description = "DDL Athena do Data Product clientes_ativos_v1."
+  value       = module.clientes_ativos_v1_athena.athena_ddl
+}

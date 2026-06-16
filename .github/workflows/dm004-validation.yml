@@ -1,0 +1,70 @@
+name: DM-004 Validation
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "terraform/**"
+      - "tests/**"
+      - "data-products/clientes_ativos_v1/**"
+      - "data-products/orders/**"
+      - "data/raw/orders.csv"
+      - "docs/**"
+      - ".github/workflows/dm004-validation.yml"
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  terraform-static:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+      - run: terraform fmt -check -recursive ../..
+      - run: terraform init -input=false
+      - run: terraform validate -no-color
+
+  terraform-apply:
+    runs-on: ubuntu-latest
+    needs: terraform-static
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: terraform init -input=false
+      - run: terraform apply -auto-approve -input=false -no-color
+
+  aws-validation:
+    runs-on: ubuntu-latest
+    needs: terraform-apply
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: terraform init -input=false
+        working-directory: terraform/environments/dev
+      - name: Run DM-004 tests
+        shell: pwsh
+        run: ./tests/Run-DM004Tests.ps1 -SkipApply -RunPublish

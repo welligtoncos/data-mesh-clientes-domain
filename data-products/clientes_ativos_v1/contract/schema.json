@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "clientes_ativos_v1",
+  "description": "Contrato do Data Product de clientes ativos",
+  "type": "object",
+  "properties": {
+    "customer_id": { "type": "string" },
+    "customer_unique_id": { "type": "string" },
+    "customer_state": { "type": "string", "pattern": "^[A-Z]{2}$" },
+    "ultima_compra": { "type": "string", "format": "date-time" },
+    "dias_desde_ultima_compra": { "type": "integer", "minimum": 0, "maximum": 90 },
+    "ativo": { "type": "boolean", "const": true },
+    "data_referencia": { "type": "string", "format": "date" }
+  },
+  "required": [
+    "customer_id",
+    "customer_unique_id",
+    "customer_state",
+    "ultima_compra",
+    "dias_desde_ultima_compra",
+    "ativo",
+    "data_referencia"
+  ]
+}

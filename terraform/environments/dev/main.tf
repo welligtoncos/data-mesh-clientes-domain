@@ -47,9 +47,16 @@ module "iam" {
   customer_data_prefix               = var.customer_data_prefix
   published_data_product_tables      = var.published_data_product_tables
   published_data_product_s3_prefixes = var.published_data_product_s3_prefixes
-  admin_trusted_principals           = var.admin_trusted_principals
-  consumer_trusted_principals        = var.consumer_trusted_principals
-  tags                               = local.common_tags
+  cross_domain_glue_catalogs = [
+    {
+      database_name = module.glue_pedidos.database_name
+      database_arn  = module.glue_pedidos.database_arn
+      s3_prefix     = var.orders_data_prefix
+    }
+  ]
+  admin_trusted_principals    = var.admin_trusted_principals
+  consumer_trusted_principals = var.consumer_trusted_principals
+  tags                        = local.common_tags
 }
 
 module "lakeformation" {

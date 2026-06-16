@@ -58,6 +58,16 @@ variable "published_data_product_s3_prefixes" {
   default     = []
 }
 
+variable "cross_domain_glue_catalogs" {
+  description = "Catalogos Glue de outros dominios consumidos pelo ETL."
+  type = list(object({
+    database_name = string
+    database_arn  = string
+    s3_prefix     = string
+  }))
+  default = []
+}
+
 variable "admin_trusted_principals" {
   description = "Principais IAM autorizados a assumir o papel de administrador do domínio."
   type        = list(string)

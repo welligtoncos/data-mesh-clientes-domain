@@ -9,6 +9,7 @@ Plataforma de dados orientada a dominios (Data Mesh) utilizando AWS e Terraform.
 | DM-001 | Infraestrutura base do dominio Clientes | Concluida |
 | DM-002 | Ingestao do dataset customers.csv | Concluida |
 | DM-003 | Publicacao clientes_por_estado_v1 | Concluida |
+| DM-004 | Publicacao clientes_ativos_v1 | Concluida |
 
 ## Arquitetura DM-002
 
@@ -61,8 +62,8 @@ terraform apply
 # Publicar Data Product (apos customer ingerido)
 aws glue start-job-run --job-name clientes-domain-dev-clientes-por-estado-v1-publish
 
-# Testes
-powershell -File tests/Run-DM003Tests.ps1 -RunPublish
+# Testes (a partir deste diretorio)
+powershell -File run-dm003-tests.ps1 -RunPublish
 ```
 
 ## Data Product clientes_por_estado_v1
@@ -76,6 +77,33 @@ powershell -File tests/Run-DM003Tests.ps1 -RunPublish
 
 - [ADR DM-003](docs/architecture/decisions/ADR-DM003-clientes-por-estado-v1.md)
 - [Documentacao](docs/data-products/clientes_por_estado_v1.md)
+
+## Deploy DM-004
+
+```powershell
+cd terraform/environments/dev
+terraform apply
+
+# Ingerir orders (fonte Pedidos) e publicar Data Product
+aws glue start-job-run --job-name clientes-domain-dev-orders-ingestion
+aws glue start-job-run --job-name clientes-domain-dev-clientes-ativos-v1-publish
+
+# Testes (a partir deste diretorio)
+powershell -File run-dm004-tests.ps1 -RunPublish
+```
+
+## Data Product clientes_ativos_v1
+
+| Item | Valor |
+|------|-------|
+| Tabela | `clientes_ativos_v1` |
+| Regra | Compra nos ultimos 90 dias (`dias_atividade`) |
+| Fontes | `customer` + `pedidos_domain.orders` |
+| Particao | `customer_state` |
+| SLA | Diario 06:00 UTC |
+
+- [ADR DM-004](docs/architecture/decisions/ADR-DM004-clientes-ativos-v1.md)
+- [Documentacao](docs/data-products/clientes_ativos_v1.md)
 
 ## Deploy DM-002
 
@@ -98,12 +126,27 @@ aws glue start-crawler --name clientes-domain-dev-customer-crawler
 
 ## Testes
 
+A partir da raiz do repositorio:
+
 ```powershell
 # DM-001
 powershell -File tests/Run-DM001Tests.ps1
 
 # DM-002 (com ingestao e validacao Athena)
 powershell -File tests/Run-DM002Tests.ps1 -RunIngestion
+
+# DM-003 (publicacao clientes_por_estado_v1)
+powershell -File tests/Run-DM003Tests.ps1 -RunPublish
+
+# DM-004 (publicacao clientes_ativos_v1)
+powershell -File tests/Run-DM004Tests.ps1 -RunPublish
+```
+
+A partir de `terraform/environments/dev`:
+
+```powershell
+powershell -File run-dm003-tests.ps1 -RunPublish
+powershell -File run-dm004-tests.ps1 -RunPublish
 ```
 
 ## Resultado Esperado

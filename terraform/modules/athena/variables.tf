@@ -32,6 +32,21 @@ variable "athena_workgroup_name" {
   type        = string
 }
 
+variable "partition_keys" {
+  description = "Chaves de particao da tabela."
+  type = list(object({
+    name = string
+    type = string
+  }))
+  default = []
+}
+
+variable "preview_order_column" {
+  description = "Coluna usada no ORDER BY da named query de preview."
+  type        = string
+  default     = "customer_state"
+}
+
 variable "tags" {
   description = "Tags obrigatorias."
   type        = map(string)
