@@ -44,6 +44,7 @@ module "iam" {
   glue_database_arn           = module.glue.database_arn
   data_products_prefix        = module.s3.data_products_prefix
   internal_prefix             = module.s3.internal_prefix
+  customer_data_prefix        = var.customer_data_prefix
   admin_trusted_principals    = var.admin_trusted_principals
   consumer_trusted_principals = var.consumer_trusted_principals
   tags                        = local.common_tags

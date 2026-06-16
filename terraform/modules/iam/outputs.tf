@@ -27,3 +27,13 @@ output "etl_processing_role_name" {
   description = "Nome do papel IAM de processamento ETL."
   value       = aws_iam_role.etl_processing.name
 }
+
+output "glue_crawler_role_arn" {
+  description = "ARN do papel IAM do Glue Crawler."
+  value       = aws_iam_role.glue_crawler.arn
+}
+
+output "glue_crawler_role_name" {
+  description = "Nome do papel IAM do Glue Crawler."
+  value       = aws_iam_role.glue_crawler.name
+}

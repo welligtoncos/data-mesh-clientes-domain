@@ -75,3 +75,80 @@ variable "data_lake_admins" {
   type        = list(string)
   default     = []
 }
+
+# ---------------------------------------------------------------------------
+# DM-002 - Ingestao customer
+# ---------------------------------------------------------------------------
+
+variable "customers_csv_path" {
+  description = "Caminho local do arquivo customers.csv para upload ao S3."
+  type        = string
+  default     = "../../../data/raw/customers.csv"
+}
+
+variable "customer_glue_script_path" {
+  description = "Caminho local do script Glue de ingestao customer."
+  type        = string
+  default     = "../../../data-products/customer/scripts/customer_ingestion.py"
+}
+
+variable "customer_table_name" {
+  description = "Nome da tabela Glue Catalog do Data Product customer."
+  type        = string
+  default     = "customer"
+}
+
+variable "customer_data_prefix" {
+  description = "Prefixo S3 do Data Product customer (Parquet particionado)."
+  type        = string
+  default     = "customer/"
+}
+
+variable "customer_raw_prefix" {
+  description = "Prefixo S3 da area raw do dataset customers."
+  type        = string
+  default     = "internal/raw/customers/"
+}
+
+variable "glue_scripts_prefix" {
+  description = "Prefixo S3 dos scripts Glue do dominio."
+  type        = string
+  default     = "internal/glue-scripts/"
+}
+
+variable "glue_job_version" {
+  description = "Versao do runtime AWS Glue."
+  type        = string
+  default     = "4.0"
+}
+
+variable "glue_job_worker_type" {
+  description = "Tipo de worker do Glue Job de ingestao."
+  type        = string
+  default     = "G.1X"
+}
+
+variable "glue_job_number_of_workers" {
+  description = "Numero de workers do Glue Job de ingestao."
+  type        = number
+  default     = 2
+}
+
+variable "glue_job_timeout_minutes" {
+  description = "Timeout do Glue Job de ingestao em minutos."
+  type        = number
+  default     = 30
+}
+
+variable "run_customer_ingestion_on_apply" {
+  description = "Executa Glue Job e Crawler apos terraform apply."
+  type        = bool
+  default     = false
+}
+
+variable "athena_results_prefix" {
+  description = "Prefixo S3 para resultados de consultas Athena."
+  type        = string
+  default     = "internal/athena-results/"
+}
+

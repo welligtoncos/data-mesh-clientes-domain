@@ -16,5 +16,9 @@ force_destroy_bucket     = true
 # Lake Formation: PutDataLakeSettings exige admin da conta (não incluído em AWSLakeFormationDataAdmin).
 create_data_lake_settings = false
 
-# Usuário que faz deploy e administra o domínio
+# Usuario que faz deploy e administra o dominio
 admin_trusted_principals = ["arn:aws:iam::303238378103:user/usuario-dados"]
+
+# DM-002 - Ingestao customer
+# Baixe o dataset completo: scripts/Download-OlistCustomers.ps1
+run_customer_ingestion_on_apply = false

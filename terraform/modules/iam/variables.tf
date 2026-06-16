@@ -40,6 +40,12 @@ variable "internal_prefix" {
   default     = "internal/"
 }
 
+variable "customer_data_prefix" {
+  description = "Prefixo S3 do Data Product customer (Parquet particionado)."
+  type        = string
+  default     = "customer/"
+}
+
 variable "admin_trusted_principals" {
   description = "Principais IAM autorizados a assumir o papel de administrador do domínio."
   type        = list(string)

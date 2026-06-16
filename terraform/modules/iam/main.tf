@@ -181,7 +181,9 @@ resource "aws_iam_role_policy" "data_product_consumer" {
           StringLike = {
             "s3:prefix" = [
               var.data_products_prefix,
-              "${var.data_products_prefix}*"
+              "${var.data_products_prefix}*",
+              var.customer_data_prefix,
+              "${var.customer_data_prefix}*"
             ]
           }
         }
@@ -194,6 +196,15 @@ resource "aws_iam_role_policy" "data_product_consumer" {
           "s3:GetObjectVersion"
         ]
         Resource = "${var.bucket_arn}/${var.data_products_prefix}*"
+      },
+      {
+        Sid    = "S3ReadCustomerDataProduct"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ]
+        Resource = "${var.bucket_arn}/${var.customer_data_prefix}*"
       },
       {
         Sid    = "GlueReadCatalog"
@@ -292,7 +303,8 @@ resource "aws_iam_role_policy" "etl_processing" {
         ]
         Resource = [
           "${var.bucket_arn}/${var.internal_prefix}*",
-          "${var.bucket_arn}/${var.data_products_prefix}*"
+          "${var.bucket_arn}/${var.data_products_prefix}*",
+          "${var.bucket_arn}/${var.customer_data_prefix}*"
         ]
       },
       {
@@ -359,5 +371,119 @@ resource "aws_iam_role_policy" "etl_processing" {
 
 resource "aws_iam_role_policy_attachment" "etl_glue_service" {
   role       = aws_iam_role.etl_processing.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+# ---------------------------------------------------------------------------
+# Glue Crawler — catalogacao de Data Products
+# ---------------------------------------------------------------------------
+resource "aws_iam_role" "glue_crawler" {
+  name = "${local.role_name_prefix}-crawler"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "glue.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(var.tags, {
+    Name    = "${local.role_name_prefix}-crawler"
+    Purpose = "glue-crawler"
+  })
+}
+
+resource "aws_iam_role_policy" "glue_crawler" {
+  name = "${local.role_name_prefix}-crawler-policy"
+  role = aws_iam_role.glue_crawler.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "S3ListDomainBucket"
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = var.bucket_arn
+      },
+      {
+        Sid    = "S3ReadCatalogTargets"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion"
+        ]
+        Resource = [
+          "${var.bucket_arn}/${var.customer_data_prefix}*",
+          "${var.bucket_arn}/${var.data_products_prefix}*"
+        ]
+      },
+      {
+        Sid    = "GlueCrawlerCatalogAccess"
+        Effect = "Allow"
+        Action = [
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:CreateTable",
+          "glue:UpdateTable",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+          "glue:CreatePartition",
+          "glue:UpdatePartition",
+          "glue:BatchCreatePartition",
+          "glue:BatchGetPartition"
+        ]
+        Resource = [
+          var.glue_database_arn,
+          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog",
+          "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.glue_database_name}/*"
+        ]
+      },
+      {
+        Sid    = "GlueCrawlerServiceAccess"
+        Effect = "Allow"
+        Action = [
+          "glue:StartCrawler",
+          "glue:StopCrawler",
+          "glue:GetCrawler",
+          "glue:GetCrawlers"
+        ]
+        Resource = "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:crawler/*"
+      },
+      {
+        Sid    = "LakeFormationDataAccess"
+        Effect = "Allow"
+        Action = [
+          "lakeformation:GetDataAccess"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "CloudWatchLogs"
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws-glue/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "glue_crawler_service" {
+  role       = aws_iam_role.glue_crawler.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
