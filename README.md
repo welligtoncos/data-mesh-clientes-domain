@@ -105,6 +105,120 @@ powershell -File run-dm004-tests.ps1 -RunPublish
 - [ADR DM-004](docs/architecture/decisions/ADR-DM004-clientes-ativos-v1.md)
 - [Documentacao](docs/data-products/clientes_ativos_v1.md)
 
+## Consultas Athena (Insights)
+
+No console Athena, use:
+
+| Configuracao | Valor |
+|--------------|-------|
+| Workgroup | `clientes-domain-dev` |
+| Database | `clientes_domain` |
+
+Consumidores (Marketing, CRM, Analytics) devem consultar **apenas** os Data Products publicados abaixo — sem acesso direto a `customer`, `orders` ou `order_items`.
+
+Named queries salvas no Terraform: `clientes_por_estado_v1-preview` e `clientes_ativos_v1-preview`.
+
+### clientes_por_estado_v1
+
+Distribuicao de clientes cadastrados por estado:
+
+```sql
+SELECT *
+FROM clientes_domain.clientes_por_estado_v1
+ORDER BY total_clientes DESC;
+```
+
+Total nacional de clientes:
+
+```sql
+SELECT SUM(total_clientes) AS total_geral
+FROM clientes_domain.clientes_por_estado_v1;
+```
+
+Estados com maior concentracao (top 5):
+
+```sql
+SELECT customer_state, total_clientes
+FROM clientes_domain.clientes_por_estado_v1
+ORDER BY total_clientes DESC
+LIMIT 5;
+```
+
+### clientes_ativos_v1
+
+Visao geral dos clientes ativos (compra nos ultimos 90 dias):
+
+```sql
+SELECT *
+FROM clientes_domain.clientes_ativos_v1
+ORDER BY dias_desde_ultima_compra ASC
+LIMIT 100;
+```
+
+Quantos clientes ativos existem hoje:
+
+```sql
+SELECT COUNT(*) AS total_clientes_ativos
+FROM clientes_domain.clientes_ativos_v1;
+```
+
+Clientes ativos por estado:
+
+```sql
+SELECT
+    customer_state,
+    COUNT(*) AS total_ativos
+FROM clientes_domain.clientes_ativos_v1
+GROUP BY customer_state
+ORDER BY total_ativos DESC;
+```
+
+Base elegivel para campanhas em um estado (ex.: SP):
+
+```sql
+SELECT
+    customer_id,
+    customer_unique_id,
+    customer_state,
+    ultima_compra,
+    dias_desde_ultima_compra
+FROM clientes_domain.clientes_ativos_v1
+WHERE customer_state = 'SP'
+ORDER BY ultima_compra DESC;
+```
+
+Clientes para retencao (compra recente, ultimos 30 dias):
+
+```sql
+SELECT
+    customer_id,
+    customer_unique_id,
+    customer_state,
+    ultima_compra,
+    dias_desde_ultima_compra
+FROM clientes_domain.clientes_ativos_v1
+WHERE dias_desde_ultima_compra <= 30
+ORDER BY ultima_compra DESC;
+```
+
+Snapshot diario do produto:
+
+```sql
+SELECT
+    data_referencia,
+    COUNT(*) AS total_ativos
+FROM clientes_domain.clientes_ativos_v1
+GROUP BY data_referencia;
+```
+
+Validar governanca da regra dos 90 dias (deve retornar 0):
+
+```sql
+SELECT COUNT(*) AS fora_da_janela
+FROM clientes_domain.clientes_ativos_v1
+WHERE dias_desde_ultima_compra > 90;
+```
+
 ## Deploy DM-002
 
 ```powershell
