@@ -1,0 +1,101 @@
+name: DM-001 Validation
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "terraform/**"
+      - "tests/**"
+      - ".github/workflows/dm001-validation.yml"
+  pull_request:
+    paths:
+      - "terraform/**"
+      - "tests/**"
+  workflow_dispatch:
+
+env:
+  TF_ENV_DIR: terraform/environments/dev
+  AWS_REGION: us-east-1
+
+jobs:
+  terraform-static:
+    name: Terraform Static Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: terraform fmt -check
+        run: terraform fmt -check -recursive ../..
+
+      - name: terraform init
+        run: terraform init -input=false
+
+      - name: terraform validate
+        run: terraform validate -no-color
+
+  terraform-integration:
+    name: Terraform Apply & Test
+    runs-on: ubuntu-latest
+    needs: terraform-static
+    defaults:
+      run:
+        working-directory: terraform/environments/dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: terraform init
+        run: terraform init -input=false
+
+      - name: terraform apply
+        run: terraform apply -auto-approve -input=false -no-color
+
+      - name: terraform plan idempotente
+        working-directory: terraform/environments/dev
+        run: |
+          terraform plan -detailed-exitcode -input=false -no-color
+          code=$?
+          if [ "$code" -eq 0 ]; then exit 0; fi
+          if [ "$code" -eq 2 ]; then echo "Plano contem alteracoes pendentes"; exit 1; fi
+          exit 1
+
+  aws-validation:
+    name: AWS Resource Validation
+    runs-on: ubuntu-latest
+    needs: terraform-integration
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: terraform init
+        working-directory: terraform/environments/dev
+        run: terraform init -input=false
+
+      - name: Run DM-001 AWS validation
+        shell: pwsh
+        run: ./tests/Validate-DM001Aws.ps1
