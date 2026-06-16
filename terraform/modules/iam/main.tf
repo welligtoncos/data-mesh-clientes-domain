@@ -196,71 +196,79 @@ resource "aws_iam_role_policy" "data_product_consumer" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "S3ListPublishedDataProducts"
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-        Resource = var.bucket_arn
-        Condition = {
-          StringLike = {
-            "s3:prefix" = local.published_s3_list_prefixes
+    Statement = concat(
+      length(local.published_s3_list_prefixes) > 0 ? [
+        {
+          Sid    = "S3ListPublishedDataProducts"
+          Effect = "Allow"
+          Action = [
+            "s3:ListBucket",
+            "s3:GetBucketLocation"
+          ]
+          Resource = var.bucket_arn
+          Condition = {
+            StringLike = {
+              "s3:prefix" = local.published_s3_list_prefixes
+            }
           }
         }
-      },
-      {
-        Sid    = "S3ReadPublishedDataProducts"
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion"
-        ]
-        Resource = local.published_s3_object_arns
-      },
-      {
-        Sid    = "GlueReadPublishedCatalog"
-        Effect = "Allow"
-        Action = [
-          "glue:GetDatabase",
-          "glue:GetDatabases",
-          "glue:GetTable",
-          "glue:GetTables",
-          "glue:GetPartition",
-          "glue:GetPartitions",
-          "glue:BatchGetPartition"
-        ]
-        Resource = concat(
-          [
-            var.glue_database_arn,
-            "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog"
-          ],
-          local.published_table_arns
-        )
-      },
-      {
-        Sid    = "LakeFormationDataAccess"
-        Effect = "Allow"
-        Action = [
-          "lakeformation:GetDataAccess"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "AthenaQueryDataProducts"
-        Effect = "Allow"
-        Action = [
-          "athena:StartQueryExecution",
-          "athena:GetQueryExecution",
-          "athena:GetQueryResults",
-          "athena:StopQueryExecution",
-          "athena:GetWorkGroup"
-        ]
-        Resource = "*"
-      }
-    ]
+      ] : [],
+      length(local.published_s3_object_arns) > 0 ? [
+        {
+          Sid    = "S3ReadPublishedDataProducts"
+          Effect = "Allow"
+          Action = [
+            "s3:GetObject",
+            "s3:GetObjectVersion"
+          ]
+          Resource = local.published_s3_object_arns
+        }
+      ] : [],
+      length(local.published_table_arns) > 0 ? [
+        {
+          Sid    = "GlueReadPublishedCatalog"
+          Effect = "Allow"
+          Action = [
+            "glue:GetDatabase",
+            "glue:GetDatabases",
+            "glue:GetTable",
+            "glue:GetTables",
+            "glue:GetPartition",
+            "glue:GetPartitions",
+            "glue:BatchGetPartition"
+          ]
+          Resource = concat(
+            [
+              var.glue_database_arn,
+              "arn:aws:glue:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:catalog"
+            ],
+            local.published_table_arns
+          )
+        }
+      ] : [],
+      [
+        {
+          Sid    = "LakeFormationDataAccess"
+          Effect = "Allow"
+          Action = [
+            "lakeformation:GetDataAccess"
+          ]
+          Resource = "*"
+        },
+        {
+          Sid    = "AthenaQueryDataProducts"
+          Effect = "Allow"
+          Action = [
+            "athena:StartQueryExecution",
+            "athena:GetQueryExecution",
+            "athena:GetQueryResults",
+            "athena:StopQueryExecution",
+            "athena:GetWorkGroup"
+          ]
+          Resource = "*"
+        }
+      ]
+    )
   })
 }
 

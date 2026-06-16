@@ -100,16 +100,19 @@ module "clientes_ativos_v1_publish_job" {
 }
 
 module "clientes_ativos_v1_lf" {
-  source = "../../modules/lakeformation_data_product"
+  source = "../../modules/lakeformation/data-products"
 
-  glue_database_name             = module.glue.database_name
-  data_product_table_name        = local.clientes_ativos_v1_name
-  data_product_consumer_role_arn = module.iam.data_product_consumer_role_arn
-  etl_processing_role_arn        = module.iam.etl_processing_role_arn
-  domain_admin_role_arn          = module.iam.domain_admin_role_arn
-  tags                           = local.common_tags
+  glue_database_name           = module.glue.database_name
+  data_product_table_name      = local.clientes_ativos_v1_name
+  consumer_role_arns_by_domain = local.product_consumer_roles_by_domain["clientes_ativos_v1"]
+  etl_processing_role_arn      = module.iam.etl_processing_role_arn
+  domain_admin_role_arn        = module.iam.domain_admin_role_arn
+  tags                         = local.common_tags
 
-  depends_on = [module.clientes_ativos_v1_athena]
+  depends_on = [
+    module.clientes_ativos_v1_athena,
+    module.federated_consumer,
+  ]
 }
 
 resource "aws_glue_trigger" "clientes_ativos_v1_daily" {

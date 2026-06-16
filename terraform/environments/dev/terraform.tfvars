@@ -27,3 +27,11 @@ run_clientes_por_estado_v1_on_apply = false
 
 # DM-004 - Publicacao clientes_ativos_v1
 run_clientes_ativos_v1_on_apply = false
+
+# DM-005 - Governanca federada (consumidores assumem via account root se nao definido)
+federated_consumer_trusted_principals = {
+  marketing   = ["arn:aws:iam::303238378103:user/usuario-dados"]
+  analytics   = ["arn:aws:iam::303238378103:user/usuario-dados"]
+  datascience = ["arn:aws:iam::303238378103:user/usuario-dados"]
+  crm         = ["arn:aws:iam::303238378103:user/usuario-dados"]
+}

@@ -9,12 +9,7 @@ variable "glue_database_name" {
 }
 
 variable "domain_admin_role_arn" {
-  description = "ARN do papel de administrador do domínio."
-  type        = string
-}
-
-variable "data_product_consumer_role_arn" {
-  description = "ARN do papel de consumidor de Data Products."
+  description = "ARN do papel de administrador do dominio."
   type        = string
 }
 
@@ -24,7 +19,7 @@ variable "etl_processing_role_arn" {
 }
 
 variable "create_data_lake_settings" {
-  description = "Cria configurações do Lake Formation Data Lake. Requer lakeformation:PutDataLakeSettings (admin da conta)."
+  description = "Cria configuracoes do Lake Formation Data Lake."
   type        = bool
   default     = false
 }
@@ -36,6 +31,6 @@ variable "data_lake_admins" {
 }
 
 variable "tags" {
-  description = "Tags obrigatórias (usadas em recursos que suportam tagging via LF)."
+  description = "Tags obrigatorias."
   type        = map(string)
 }

@@ -54,7 +54,7 @@ $publishJob = Get-TerraformOutput "clientes_ativos_v1_glue_job_name"
 $ordersJob = Get-TerraformOutput "orders_glue_job_name"
 $wg = Get-TerraformOutput "athena_workgroup_name"
 $dias = [int](Get-TerraformOutput "clientes_ativos_v1_dias_atividade")
-$consumerArn = Get-TerraformOutput "iam_data_product_consumer_role_arn"
+$consumerArn = Get-TerraformOutput "marketing_consumer_role_arn"
 $env:AWS_DEFAULT_REGION = Get-TerraformOutput "aws_region"
 $productPrefix = $productUri -replace "^s3://$bucket/", ""
 

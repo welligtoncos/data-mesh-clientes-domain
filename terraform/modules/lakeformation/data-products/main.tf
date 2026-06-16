@@ -1,13 +1,7 @@
 data "aws_caller_identity" "current" {}
 
-locals {
-  effective_consumer_roles_by_domain = length(keys(var.consumer_role_arns_by_domain)) > 0 ? var.consumer_role_arns_by_domain : (
-    var.data_product_consumer_role_arn != null ? { legacy = var.data_product_consumer_role_arn } : {}
-  )
-}
-
 resource "aws_lakeformation_permissions" "consumer_data_product_table" {
-  for_each = local.effective_consumer_roles_by_domain
+  for_each = var.consumer_role_arns_by_domain
 
   principal   = each.value
   permissions = ["SELECT", "DESCRIBE"]

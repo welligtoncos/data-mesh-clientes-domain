@@ -10,6 +10,7 @@ Plataforma de dados orientada a dominios (Data Mesh) utilizando AWS e Terraform.
 | DM-002 | Ingestao do dataset customers.csv | Concluida |
 | DM-003 | Publicacao clientes_por_estado_v1 | Concluida |
 | DM-004 | Publicacao clientes_ativos_v1 | Concluida |
+| DM-005 | Governanca federada Lake Formation | Concluida |
 
 ## Arquitetura DM-002
 
@@ -219,6 +220,52 @@ FROM clientes_domain.clientes_ativos_v1
 WHERE dias_desde_ultima_compra > 90;
 ```
 
+## DM-005 - Governanca Federada
+
+```mermaid
+flowchart TB
+    subgraph Produtor["Dominio Clientes"]
+        Admin["clientes_admin"]
+        ETL["etl"]
+        DP1["clientes_por_estado_v1"]
+        DP2["clientes_ativos_v1"]
+    end
+    subgraph LF["Lake Formation"]
+        Policies["Federated Policies"]
+    end
+    subgraph Consumidores
+        MKT["marketing_consumer"]
+        ANA["analytics_consumer"]
+        DS["datascience_consumer"]
+        CRM["crm_consumer"]
+    end
+    Admin -->|ALL| DP1
+    Admin -->|ALL| DP2
+    MKT -->|SELECT| DP1
+    MKT -->|SELECT| DP2
+    ANA -->|SELECT| DP1
+    ANA -->|SELECT| DP2
+    DS -->|SELECT| DP1
+    CRM -->|SELECT| DP2
+    Policies --> LF
+```
+
+| Role | Acesso |
+|------|--------|
+| `clientes-domain-dev-admin` | ALL (owner) |
+| `clientes-domain-dev-marketing-consumer` | SELECT em ambos produtos |
+| `clientes-domain-dev-analytics-consumer` | SELECT em ambos produtos |
+| `clientes-domain-dev-datascience-consumer` | SELECT apenas `clientes_por_estado_v1` |
+| `clientes-domain-dev-crm-consumer` | SELECT apenas `clientes_ativos_v1` |
+
+```powershell
+cd terraform/environments/dev
+terraform apply
+powershell -File run-dm005-tests.ps1
+```
+
+- [ADR DM-005](docs/architecture/decisions/ADR-DM005-federated-governance.md)
+
 ## Deploy DM-002
 
 ```powershell
@@ -254,6 +301,9 @@ powershell -File tests/Run-DM003Tests.ps1 -RunPublish
 
 # DM-004 (publicacao clientes_ativos_v1)
 powershell -File tests/Run-DM004Tests.ps1 -RunPublish
+
+# DM-005 (governanca federada Lake Formation)
+powershell -File tests/Run-DM005Tests.ps1
 ```
 
 A partir de `terraform/environments/dev`:
@@ -261,6 +311,7 @@ A partir de `terraform/environments/dev`:
 ```powershell
 powershell -File run-dm003-tests.ps1 -RunPublish
 powershell -File run-dm004-tests.ps1 -RunPublish
+powershell -File run-dm005-tests.ps1
 ```
 
 ## Resultado Esperado

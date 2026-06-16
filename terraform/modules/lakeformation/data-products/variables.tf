@@ -9,7 +9,7 @@ variable "data_product_table_name" {
 }
 
 variable "consumer_role_arns_by_domain" {
-  description = "Mapa dominio consumidor => ARN do papel."
+  description = "Mapa dominio consumidor => ARN do papel (chaves estaticas para for_each)."
   type        = map(string)
   default     = {}
 }
@@ -18,12 +18,6 @@ variable "consumer_role_arns" {
   description = "Deprecated: use consumer_role_arns_by_domain."
   type        = list(string)
   default     = []
-}
-
-variable "data_product_consumer_role_arn" {
-  description = "Deprecated: use consumer_role_arns."
-  type        = string
-  default     = null
 }
 
 variable "etl_processing_role_arn" {

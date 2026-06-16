@@ -190,3 +190,49 @@ output "clientes_ativos_v1_athena_ddl" {
   description = "DDL Athena do Data Product clientes_ativos_v1."
   value       = module.clientes_ativos_v1_athena.athena_ddl
 }
+
+# DM-005 - Governanca federada
+output "clientes_admin_role_arn" {
+  description = "ARN do papel administrador do dominio Clientes (alias domain admin)."
+  value       = module.iam.domain_admin_role_arn
+}
+
+output "clientes_admin_role_name" {
+  description = "Nome do papel administrador do dominio Clientes."
+  value       = module.iam.domain_admin_role_name
+}
+
+output "federated_consumer_role_arns" {
+  description = "ARNs dos papeis consumidores federados por dominio."
+  value       = { for k, m in module.federated_consumer : k => m.role_arn }
+}
+
+output "federated_consumer_role_names" {
+  description = "Nomes dos papeis consumidores federados por dominio."
+  value       = { for k, m in module.federated_consumer : k => m.role_name }
+}
+
+output "governance_policy_s3_uri" {
+  description = "URI S3 do catalogo de politicas federadas."
+  value       = "s3://${module.s3.bucket_id}/${module.s3.data_products_prefix}governance/federated-policy.json"
+}
+
+output "marketing_consumer_role_arn" {
+  description = "ARN do papel consumidor Marketing."
+  value       = module.federated_consumer["marketing"].role_arn
+}
+
+output "analytics_consumer_role_arn" {
+  description = "ARN do papel consumidor Analytics."
+  value       = module.federated_consumer["analytics"].role_arn
+}
+
+output "datascience_consumer_role_arn" {
+  description = "ARN do papel consumidor Data Science."
+  value       = module.federated_consumer["datascience"].role_arn
+}
+
+output "crm_consumer_role_arn" {
+  description = "ARN do papel consumidor CRM."
+  value       = module.federated_consumer["crm"].role_arn
+}

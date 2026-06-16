@@ -313,3 +313,31 @@ variable "run_clientes_ativos_v1_on_apply" {
   default     = false
 }
 
+# ---------------------------------------------------------------------------
+# DM-005 - Governanca federada Lake Formation
+# ---------------------------------------------------------------------------
+
+variable "enable_federated_governance" {
+  description = "Habilita consumidores federados e permissoes Lake Formation por Data Product."
+  type        = bool
+  default     = true
+}
+
+variable "clientes_por_estado_v1_consumer_domains" {
+  description = "Dominios consumidores autorizados para clientes_por_estado_v1."
+  type        = list(string)
+  default     = ["marketing", "analytics", "datascience"]
+}
+
+variable "clientes_ativos_v1_consumer_domains" {
+  description = "Dominios consumidores autorizados para clientes_ativos_v1."
+  type        = list(string)
+  default     = ["marketing", "crm", "analytics"]
+}
+
+variable "federated_consumer_trusted_principals" {
+  description = "Principais IAM por dominio consumidor (chave: marketing, analytics, etc.)."
+  type        = map(list(string))
+  default     = {}
+}
+
