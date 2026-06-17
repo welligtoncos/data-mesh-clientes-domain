@@ -266,6 +266,7 @@ powershell -File run-dm005-tests.ps1
 ```
 
 - [ADR DM-005](docs/architecture/decisions/ADR-DM005-federated-governance.md)
+- [Simulacao por ator (Data Mesh)](docs/guides/simulacao-atores-data-mesh.md)
 
 ## DM-006 - API de Data Products
 
@@ -324,6 +325,7 @@ Documentacao:
 
 - [OpenAPI v1](docs/openapi/data-products-api-v1.yaml)
 - [ADR DM-006](docs/architecture/decisions/ADR-DM006-api-exposure.md)
+- [Simulacao por ator (Data Mesh)](docs/guides/simulacao-atores-data-mesh.md)
 
 ## Deploy DM-002
 
@@ -398,4 +400,5 @@ Todos os recursos recebem:
 
 ## Documentacao
 
+- [Simulacao do processo real por ator](docs/guides/simulacao-atores-data-mesh.md)
 - [ADR DM-002](docs/architecture/decisions/ADR-DM002-customer-ingestion.md)
