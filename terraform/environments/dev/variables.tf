@@ -341,3 +341,37 @@ variable "federated_consumer_trusted_principals" {
   default     = {}
 }
 
+# ---------------------------------------------------------------------------
+# DM-006 - API de Data Products
+# ---------------------------------------------------------------------------
+
+variable "data_products_api_stage_name" {
+  description = "Stage da API de Data Products."
+  type        = string
+  default     = "v1"
+}
+
+variable "data_products_api_key_required" {
+  description = "Exige API Key nas requisicoes da API."
+  type        = bool
+  default     = true
+}
+
+variable "data_products_api_lambda_timeout" {
+  description = "Timeout das Lambdas da API em segundos."
+  type        = number
+  default     = 30
+}
+
+variable "data_products_api_lambda_memory" {
+  description = "Memoria das Lambdas da API em MB."
+  type        = number
+  default     = 256
+}
+
+variable "data_products_api_openapi_path" {
+  description = "Caminho local do contrato OpenAPI."
+  type        = string
+  default     = "../../../docs/openapi/data-products-api-v1.yaml"
+}
+

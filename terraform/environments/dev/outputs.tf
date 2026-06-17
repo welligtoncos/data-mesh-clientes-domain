@@ -236,3 +236,50 @@ output "crm_consumer_role_arn" {
   description = "ARN do papel consumidor CRM."
   value       = module.federated_consumer["crm"].role_arn
 }
+
+# DM-006 - API Data Products
+output "data_products_api_id" {
+  description = "ID do API Gateway de Data Products."
+  value       = module.data_products_api.api_id
+}
+
+output "data_products_api_invoke_url" {
+  description = "URL base da API de Data Products."
+  value       = module.data_products_api.stage_invoke_url
+}
+
+output "data_products_api_por_estado_url" {
+  description = "URL do endpoint GET /clientes/por-estado."
+  value       = module.data_products_api.por_estado_url
+}
+
+output "data_products_api_ativos_url" {
+  description = "URL do endpoint GET /clientes/ativos."
+  value       = module.data_products_api.ativos_url
+}
+
+output "data_products_api_key" {
+  description = "API Key para consumo da API de Data Products."
+  value       = module.data_products_api.api_key_value
+  sensitive   = true
+}
+
+output "data_products_api_lambda_por_estado_name" {
+  description = "Nome da Lambda clientes por estado."
+  value       = module.lambda_clientes_por_estado.function_name
+}
+
+output "data_products_api_lambda_ativos_name" {
+  description = "Nome da Lambda clientes ativos."
+  value       = module.lambda_clientes_ativos.function_name
+}
+
+output "data_products_api_lambda_role_name" {
+  description = "Nome do papel IAM das Lambdas da API."
+  value       = aws_iam_role.api_lambda.name
+}
+
+output "data_products_api_openapi_s3_uri" {
+  description = "URI S3 do contrato OpenAPI."
+  value       = "s3://${module.s3.bucket_id}/${module.s3.data_products_prefix}api/openapi-v1.yaml"
+}

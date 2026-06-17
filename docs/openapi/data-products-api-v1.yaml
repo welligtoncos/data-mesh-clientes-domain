@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Clientes Data Products API
+  version: v1
+  description: API REST para consumo dos Data Products clientes_por_estado_v1 e clientes_ativos_v1 via Athena.
+servers:
+  - url: https://{apiId}.execute-api.{region}.amazonaws.com/v1
+    variables:
+      apiId:
+        default: example
+      region:
+        default: us-east-1
+security:
+  - ApiKeyAuth: []
+paths:
+  /clientes/por-estado:
+    get:
+      summary: Distribuicao de clientes por estado
+      operationId: listClientesPorEstado
+      responses:
+        "200":
+          description: Lista de estados com total de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientePorEstado"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /clientes/ativos:
+    get:
+      summary: Clientes ativos (compras nos ultimos 90 dias)
+      operationId: listClientesAtivos
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            example: SP
+          description: Filtro por UF brasileira (2 letras)
+      responses:
+        "200":
+          description: Lista de clientes ativos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClienteAtivo"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  schemas:
+    ClientePorEstado:
+      type: object
+      properties:
+        customer_state:
+          type: string
+        total_clientes:
+          type: integer
+        data_referencia:
+          type: string
+          format: date
+    ClienteAtivo:
+      type: object
+      properties:
+        customer_id:
+          type: string
+        customer_unique_id:
+          type: string
+        customer_state:
+          type: string
+        ultima_compra:
+          type: string
+          format: date-time
+        dias_desde_ultima_compra:
+          type: integer
+        ativo:
+          type: boolean
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+  responses:
+    BadRequest:
+      description: Parametro invalido
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: Erro interno
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

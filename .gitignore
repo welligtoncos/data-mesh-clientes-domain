@@ -23,3 +23,5 @@ Thumbs.db
 *.pem
 .env
 .env.*
+terraform/modules/lambda_function/.build/
+

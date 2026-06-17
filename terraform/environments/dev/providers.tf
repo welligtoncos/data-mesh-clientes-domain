@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/null"
       version = ">= 3.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.4"
+    }
   }
 }
 
@@ -19,4 +23,9 @@ provider "aws" {
   default_tags {
     tags = local.common_tags
   }
+}
+
+provider "aws" {
+  alias  = "no_default_tags"
+  region = var.aws_region
 }

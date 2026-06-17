@@ -11,6 +11,7 @@ Plataforma de dados orientada a dominios (Data Mesh) utilizando AWS e Terraform.
 | DM-003 | Publicacao clientes_por_estado_v1 | Concluida |
 | DM-004 | Publicacao clientes_ativos_v1 | Concluida |
 | DM-005 | Governanca federada Lake Formation | Concluida |
+| DM-006 | Exposicao de Data Products via API | Concluida |
 
 ## Arquitetura DM-002
 
@@ -266,6 +267,64 @@ powershell -File run-dm005-tests.ps1
 
 - [ADR DM-005](docs/architecture/decisions/ADR-DM005-federated-governance.md)
 
+## DM-006 - API de Data Products
+
+Camada REST para consumo dos Data Products sem SQL ou acesso direto ao data lake.
+
+```mermaid
+flowchart TB
+    Consumer[Aplicacao / Dashboard / CRM]
+    APIGW[API Gateway v1]
+    LambdaPorEstado[Lambda por-estado]
+    LambdaAtivos[Lambda ativos]
+    Athena[Athena Workgroup]
+    Glue[Glue Catalog]
+    LF[Lake Formation]
+    DP1[(clientes_por_estado_v1)]
+    DP2[(clientes_ativos_v1)]
+
+    Consumer -->|HTTPS + x-api-key| APIGW
+    APIGW --> LambdaPorEstado
+    APIGW --> LambdaAtivos
+    LambdaPorEstado --> Athena
+    LambdaAtivos --> Athena
+    Athena --> Glue
+    Glue --> DP1
+    Glue --> DP2
+    LF -.-> Athena
+```
+
+### Endpoints
+
+| Metodo | Path | Descricao |
+|--------|------|-----------|
+| GET | `/clientes/por-estado` | Distribuicao de clientes por UF |
+| GET | `/clientes/ativos` | Clientes com compra nos ultimos 90 dias |
+| GET | `/clientes/ativos?estado=SP` | Filtro por estado (UF valida) |
+
+### Deploy e testes
+
+**Permissoes IAM do usuario de deploy:** alem das permissoes ja usadas em DM-001 a DM-005, o DM-006 exige `apigateway:POST`, `apigateway:GET`, `apigateway:PATCH`, `apigateway:PUT`, `lambda:*` (criacao) e opcionalmente `logs:CreateLogGroup` se `create_log_group = true` nas Lambdas.
+
+```powershell
+cd terraform/environments/dev
+terraform apply
+powershell -File run-dm006-tests.ps1
+```
+
+Exemplo de consumo:
+
+```powershell
+$apiKey = terraform output -raw data_products_api_key
+$url = terraform output -raw data_products_api_por_estado_url
+Invoke-RestMethod -Uri $url -Headers @{ "x-api-key" = $apiKey }
+```
+
+Documentacao:
+
+- [OpenAPI v1](docs/openapi/data-products-api-v1.yaml)
+- [ADR DM-006](docs/architecture/decisions/ADR-DM006-api-exposure.md)
+
 ## Deploy DM-002
 
 ```powershell
@@ -304,6 +363,9 @@ powershell -File tests/Run-DM004Tests.ps1 -RunPublish
 
 # DM-005 (governanca federada Lake Formation)
 powershell -File tests/Run-DM005Tests.ps1
+
+# DM-006 (API REST Data Products)
+powershell -File tests/Run-DM006Tests.ps1
 ```
 
 A partir de `terraform/environments/dev`:
@@ -312,6 +374,7 @@ A partir de `terraform/environments/dev`:
 powershell -File run-dm003-tests.ps1 -RunPublish
 powershell -File run-dm004-tests.ps1 -RunPublish
 powershell -File run-dm005-tests.ps1
+powershell -File run-dm006-tests.ps1
 ```
 
 ## Resultado Esperado
